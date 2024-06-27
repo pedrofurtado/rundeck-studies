@@ -1,0 +1,13 @@
+docker_container_linux_server_01:
+  nodename: docker_container_linux_server_01
+  hostname: linux_server_01
+  description: 'linux server 01'
+  username: root
+  osFamily: unix
+
+docker_container_linux_server_02:
+  nodename: docker_container_linux_server_02
+  hostname: linux_server_02
+  description: 'linux server 02'
+  username: root
+  osFamily: unix

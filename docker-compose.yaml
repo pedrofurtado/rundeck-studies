@@ -1,0 +1,51 @@
+version: '3'
+
+x-hosts-configs:
+  &hosts-configs
+  image: ubuntu:22.04
+  restart: always
+  command:
+    - /bin/bash
+    - -c
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      export DEBCONF_NONINTERACTIVE_SEEN=true
+
+      echo 'root:verysecurepassword' | chpasswd
+
+      apt-get update -y
+      apt-get install -y ssh
+
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+      sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config
+      sed -i 's/#PubkeyAuthentication/PubkeyAuthentication/' /etc/ssh/sshd_config
+      sed -i 's/#PasswordAuthentication/PasswordAuthentication/' /etc/ssh/sshd_config
+
+      systemctl enable ssh
+      service ssh start
+
+      echo "Host $$(hostname) is ready"
+      touch /my_log_file.txt
+      tail -f /dev/null
+
+services:
+  rundeck:
+    restart: always
+    image: rundeck/rundeck:5.4.0 # default credentials: admin / admin
+    ports:
+      - 3009:4440
+    environment:
+      RUNDECK_GRAILS_URL: http://localhost:3009
+    volumes:
+      - ./rundeck-server-data:/home/rundeck/server/data
+      - ./resources.yaml:/home/rundeck/resources.yaml
+
+  linux_server_01:
+    <<: *hosts-configs
+    hostname: linux_server_01
+    container_name: linux_server_01
+
+  linux_server_02:
+    <<: *hosts-configs
+    hostname: linux_server_02
+    container_name: linux_server_02
